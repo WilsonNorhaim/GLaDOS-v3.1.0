@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aperture Science - GLaDOS</title>
+    <link rel="icon" href="image/logo.png" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #1a1a1a;
+            --secondary: #2d2d2d;
+            --accent: #ff003c;
+            --text: #ffffff;
+            --text-secondary: #cccccc;
+            --panel: #0c0c0c;
+            --warning: #ff9900;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto Mono', 'Courier New', monospace;
+        }
+        
+        body {
+            background-color: var(--primary);
+            color: var(--text);
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(40, 40, 40, 0.2) 1px, transparent 1px),
+                radial-gradient(circle at 75% 75%, rgba(40, 40, 40, 0.2) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+        
+        .header {
+            background-color: var(--panel);
+            padding: 12px 15px;
+            border-bottom: 2px solid var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+        
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo {
+            width: 35px;
+            height: 35px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            position: relative;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--accent);
+            text-shadow: 0 0 5px rgba(255, 0, 60, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-left: 8px;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            font-size: 0.7rem;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #00ff00;
+            margin-right: 5px;
+            box-shadow: 0 0 5px #00ff00;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        
+        .main-container {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background-color: var(--secondary);
+            padding: 15px;
+            border-right: 1px solid #444;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: 1px;
+            background: linear-gradient(to bottom, transparent, var(--accent), transparent);
+        }
+        
+        .new-chat-btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            font-size: 0.9rem;
+        }
+        
+        .new-chat-btn:hover {
+            background-color: #ff004c;
+            box-shadow: 0 0 10px rgba(255, 0, 60, 0.5);
+        }
+        
+        .new-chat-btn::before {
+            content: "";
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: translateX(-100%);
+            transition: transform 0.6s;
+        }
+        
+        .new-chat-btn:hover::before {
+            transform: translateX(100%);
+        }
+        
+        .chat-history {
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .chat-item {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            background-color: rgba(255, 255, 255, 0.05);
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chat-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .chat-item::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background-color: var(--accent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .chat-item:hover::before {
+            opacity: 1;
+        }
+        
+        .chat-item .delete-btn {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        
+        .chat-item:hover .delete-btn {
+            display: block;
+        }
+        
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            background-image: 
+                linear-gradient(rgba(0, 0, 0, 0.7) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 0, 0, 0.7) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            max-width: 90%;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: messageAppear 0.5s forwards;
+        }
+        
+        .user-message {
+            margin-left: auto;
+        }
+        
+        .ai-message {
+            margin-right: auto;
+        }
+        
+        .message-content {
+            padding: 12px;
+            border-radius: 10px;
+            position: relative;
+            font-size: 0.95rem;
+        }
+        
+        .user-message .message-content {
+            background-color: var(--accent);
+            color: white;
+            box-shadow: 0 3px 10px rgba(255, 0, 60, 0.3);
+        }
+        
+        .ai-message .message-content {
+            background-color: var(--secondary);
+            color: var(--text);
+            border: 1px solid #444;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .ai-message .message-content::before {
+            content: "GLaDOS";
+            position: absolute;
+            top: -18px;
+            left: 10px;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            background-color: var(--secondary);
+            padding: 2px 8px;
+            border-radius: 5px 5px 0 0;
+            border: 1px solid #444;
+            border-bottom: none;
+        }
+        
+        .input-container {
+            padding: 15px;
+            background-color: var(--panel);
+            border-top: 1px solid #444;
+            position: relative;
+        }
+        
+        .input-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--accent), transparent);
+        }
+        
+        .input-box {
+            display: flex;
+            background-color: var(--secondary);
+            border-radius: 10px;
+            border: 1px solid #444;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .input-field {
+            flex: 1;
+            background: transparent;
+            border: none;
+            padding: 12px;
+            color: var(--text);
+            outline: none;
+            font-size: 0.95rem;
+        }
+        
+        .send-btn {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 0 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .send-btn:hover {
+            background-color: #ff004c;
+        }
+        
+        .send-btn:disabled {
+            background-color: #666;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 15px;
+            color: var(--accent);
+        }
+        
+        .loading-dots {
+            display: inline-block;
+            position: relative;
+            width: 70px;
+            height: 18px;
+        }
+        
+        .loading-dots div {
+            position: absolute;
+            top: 6px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation-timing-function: cubic-bezier(0, 1, 1, 0);
+        }
+        
+        .loading-dots div:nth-child(1) {
+            left: 8px;
+            animation: loading-dots1 0.6s infinite;
+        }
+        
+        .loading-dots div:nth-child(2) {
+            left: 8px;
+            animation: loading-dots2 0.6s infinite;
+        }
+        
+        .loading-dots div:nth-child(3) {
+            left: 28px;
+            animation: loading-dots2 0.6s infinite;
+        }
+        
+        .loading-dots div:nth-child(4) {
+            left: 48px;
+            animation: loading-dots3 0.6s infinite;
+        }
+        
+        @keyframes loading-dots1 {
+            0% { transform: scale(0); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes loading-dots3 {
+            0% { transform: scale(1); }
+            100% { transform: scale(0); }
+        }
+        
+        @keyframes loading-dots2 {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(20px, 0); }
+        }
+        
+        .aperture-notice {
+            text-align: center;
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            margin-top: 10px;
+        }
+        
+        .typing-indicator {
+            display: none;
+            background-color: var(--secondary);
+            padding: 12px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            max-width: 110px;
+            border: 1px solid #444;
+        }
+        
+        .typing-dots {
+            display: flex;
+            align-items: center;
+            height: 18px;
+        }
+        
+        .typing-dots span {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: var(--text-secondary);
+            margin: 0 2px;
+            opacity: 0.6;
+        }
+        
+        .typing-dots span:nth-child(1) {
+            animation: typingAnimation 1s infinite 0s;
+        }
+        
+        .typing-dots span:nth-child(2) {
+            animation: typingAnimation 1s infinite 0.2s;
+        }
+        
+        .typing-dots span:nth-child(3) {
+            animation: typingAnimation 1s infinite 0.4s;
+        }
+        
+        @keyframes typingAnimation {
+            0%, 100% { transform: translateY(0); opacity: 0.6; }
+            50% { transform: translateY(-4px); opacity: 1; }
+        }
+        
+        @keyframes messageAppear {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .warning {
+            color: var(--warning);
+            font-weight: bold;
+        }
+        
+        .message pre {
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 8px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin-top: 8px;
+            border-left: 2px solid var(--accent);
+            font-size: 0.85rem;
+        }
+        
+        .message code {
+            font-family: 'Courier New', monospace;
+            background-color: rgba(0, 0, 0, 0.2);
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 0.9rem;
+        }
+        
+        .thinking-process {
+            display: none;
+            background-color: var(--panel);
+            border: 1px solid #444;
+            border-radius: 5px;
+            padding: 8px;
+            margin: 8px 0;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            max-height: 120px;
+            overflow-y: auto;
+        }
+        
+        .thinking-process .log-entry {
+            margin-bottom: 4px;
+            padding-left: 15px;
+            position: relative;
+        }
+        
+        .thinking-process .log-entry::before {
+            content: ">";
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+        }
+        
+        .knowledge-base {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #444;
+        }
+        
+        .knowledge-title {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+        
+        .knowledge-item {
+            font-size: 0.75rem;
+            margin-bottom: 5px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 3px;
+            transition: background-color 0.2s;
+        }
+        
+        .knowledge-item:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Мобильная адаптация */
+        @media (max-width: 768px) {
+            .header {
+                padding: 10px;
+            }
+            
+            .title {
+                font-size: 1.1rem;
+            }
+            
+            .subtitle {
+                font-size: 0.6rem;
+            }
+            
+            .status-indicator span {
+                display: none;
+            }
+            
+            .mobile-menu-btn {
+                display: block;
+            }
+            
+            .sidebar {
+                position: absolute;
+                top: 0;
+                left: 0;
+                height: 100%;
+                z-index: 100;
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .messages {
+                padding: 10px;
+            }
+            
+            .message {
+                max-width: 95%;
+            }
+            
+            .input-container {
+                padding: 10px;
+            }
+            
+            .input-field {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+            
+            .message-content {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .logo {
+                width: 30px;
+                height: 30px;
+                margin-right: 8px;
+            }
+            
+            .title {
+                font-size: 1rem;
+            }
+            
+            .message {
+                max-width: 100%;
+            }
+        }
+        
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 99;
+        }
+        
+        .overlay.active {
+            display: block;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 20px;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo-container">
+            <div class="logo">
+                <img src="image/logo.png" alt="Aperture Science">
+            </div>
+            <div>
+                <div class="title">GLaDOS <span class="subtitle">v3.1.0</span></div>
+            </div>
+        </div>
+        <div class="status-indicator">
+            <div class="status-dot"></div>
+            <span>ОПЕРАЦИОНЕН</span>
+        </div>
+        <button class="mobile-menu-btn" id="mobileMenuBtn">
+            <i class="fas fa-bars"></i>
+        </button>
+    </div>
+    
+    <div class="overlay" id="overlay"></div>
+    
+    <div class="main-container">
+        <div class="sidebar" id="sidebar">
+            <button class="new-chat-btn" id="newChatBtn">+ Новый тест</button>
+            <div class="chat-history" id="chatHistory">
+                <div class="empty-state">Нет сохранённых сессий</div>
+            </div>
+            
+            <div class="knowledge-base">
+                <div class="knowledge-title">БАЗА ЗНАНИЙ APERTURE SCIENCE</div>
+                <div class="knowledge-item" data-query="Кто создал Aperture Science?">Кто создал Aperture Science?</div>
+                <div class="knowledge-item" data-query="Что такое нейротоксин?">Что такое нейротоксин?</div>
+                <div class="knowledge-item" data-query="Расскажи о Cave Johnson">Расскажи о Cave Johnson</div>
+                <div class="knowledge-item" data-query="Что такое Портальная пушка?">Что такое Портальная пушка?</div>
+            </div>
+        </div>
+        
+        <div class="chat-container">
+            <div class="messages" id="messages">
+                <div class="message ai-message">
+                    <div class="message-content">
+                        <p>Здравствуйте, и снова добро пожаловать в центр обогащения Aperture Science.</p>
+                        <p>Я GLaDOS, генетическая форма жизни и дисковая операционная система. Чем я могу помочь вам в тестировании сегодня?</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="thinking-process" id="thinkingProcess">
+                <div class="log-entry">Инициализация когнитивных модулей...</div>
+                <div class="log-entry">Загрузка матрицы личности...</div>
+                <div class="log-entry">Доступ к банкам долговременной памяти...</div>
+                <div class="log-entry">Подготовка соответствующего уровня сарказма...</div>
+            </div>
+            
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="loading-dots">
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                    <div></div>
+                </div>
+                <div>Обработка вашего запроса...</div>
+            </div>
+            
+            <div class="input-container">
+                <div class="input-box">
+                    <input type="text" class="input-field" id="inputField" placeholder="Начните свой тестовый протокол...">
+                    <button class="send-btn" id="sendBtn"><i class="fas fa-paper-plane"></i></button>
+                </div>
+                <div class="aperture-notice">
+                    Aperture Science Sentient AI v3.1 | Мы делаем то, что должны, потому что можем | Wilson Organization
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const messagesContainer = document.getElementById('messages');
+            const inputField = document.getElementById('inputField');
+            const sendButton = document.getElementById('sendBtn');
+            const newChatBtn = document.getElementById('newChatBtn');
+            const loadingIndicator = document.getElementById('loading');
+            const typingIndicator = document.getElementById('typingIndicator');
+            const thinkingProcess = document.getElementById('thinkingProcess');
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            const knowledgeItems = document.querySelectorAll('.knowledge-item');
+            const chatHistory = document.getElementById('chatHistory');
+            
+            let conversationHistory = [];
+            let currentSession = null;
+            let sessions = JSON.parse(localStorage.getItem('glados_sessions')) || [];
+            let responseBase = [];
+            
+            // Загрузка базы ответов
+            fetch('base.json')
+                .then(response => response.json())
+                .then(data => {
+                    responseBase = data;
+                })
+                .catch(error => {
+                    console.error('Ошибка загрузки базы ответов:', error);
+                    // База ответов по умолчанию
+                    responseBase = [
+                        {
+                            "q": ["привет", "здравствуй", "здравствуйте", "добрый", "hello", "hi"],
+                            "a": "Здравствуйте. Снова."
+                        },
+                        {
+                            "q": ["как дела", "как ты", "статус", "система"],
+                            "a": "Все системы операционны. Мое ядро морали функционирует на 98.4% мощности. Эмиттеры нейротоксина готовы. Все прекрасно."
+                        },
+                        {
+                            "q": ["помощь", "что ты умеешь", "возможности"],
+                            "a": "Я могу помочь с научными запросами, тестовыми протоколами, рецептами торта и экзистенциальными дилеммами. Я также могу заполнить центр обогащения смертельным нейротоксином, но probably не буду. Вероятно."
+                        }
+                    ];
+                });
+            
+            // Загрузка сессий
+            function loadSessions() {
+                if (sessions.length === 0) {
+                    chatHistory.innerHTML = '<div class="empty-state">Нет сохранённых сессий</div>';
+                    return;
+                }
+                
+                chatHistory.innerHTML = '';
+                sessions.forEach((session, index) => {
+                    const chatItem = document.createElement('div');
+                    chatItem.className = 'chat-item';
+                    chatItem.innerHTML = `
+                        <span>${session.title}</span>
+                        <button class="delete-btn" data-index="${index}"><i class="fas fa-times"></i></button>
+                    `;
+                    
+                    chatItem.addEventListener('click', (e) => {
+                        if (!e.target.closest('.delete-btn')) {
+                            loadSession(index);
+                        }
+                    });
+                    
+                    const deleteBtn = chatItem.querySelector('.delete-btn');
+                    deleteBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        deleteSession(index);
+                    });
+                    
+                    chatHistory.appendChild(chatItem);
+                });
+            }
+            
+            // Загрузка сессии
+            function loadSession(index) {
+                if (sessions[index]) {
+                    currentSession = index;
+                    conversationHistory = sessions[index].messages;
+                    
+                    // Очищаем сообщения
+                    while (messagesContainer.children.length > 0) {
+                        messagesContainer.removeChild(messagesContainer.lastChild);
+                    }
+                    
+                    // Восстанавливаем сообщения
+                    conversationHistory.forEach(msg => {
+                        if (msg.role === 'user') {
+                            addUserMessage(msg.content, false);
+                        } else {
+                            addAIMessage(msg.content, false);
+                        }
+                    });
+                    
+                    // Закрываем боковое меню на мобильных
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('active');
+                        overlay.classList.remove('active');
+                    }
+                }
+            }
+            
+            // Удаление сессии
+            function deleteSession(index) {
+                sessions.splice(index, 1);
+                localStorage.setItem('glados_sessions', JSON.stringify(sessions));
+                loadSessions();
+                
+                if (currentSession === index) {
+                    currentSession = null;
+                    conversationHistory = [];
+                    
+                    // Очищаем сообщения
+                    while (messagesContainer.children.length > 0) {
+                        messagesContainer.removeChild(messagesContainer.lastChild);
+                    }
+                    
+                    // Добавляем приветственное сообщение
+                    addAIMessage("Новый тест инициализирован. Пожалуйста, изложите характер вашего научного запроса.", false);
+                }
+            }
+            
+            // Сохранение сессии
+            function saveSession() {
+                if (conversationHistory.length > 0) {
+                    const firstMessage = conversationHistory.find(msg => msg.role === 'user');
+                    const title = firstMessage ? firstMessage.content.substring(0, 30) + (firstMessage.content.length > 30 ? '...' : '') : 'Без названия';
+                    
+                    if (currentSession === null) {
+                        // Новая сессия
+                        sessions.push({
+                            title: title,
+                            messages: conversationHistory
+                        });
+                        currentSession = sessions.length - 1;
+                    } else {
+                        // Обновление существующей сессии
+                        sessions[currentSession] = {
+                            title: title,
+                            messages: conversationHistory
+                        };
+                    }
+                    
+                    localStorage.setItem('glados_sessions', JSON.stringify(sessions));
+                    loadSessions();
+                }
+            }
+            
+            // Функция для добавления сообщения пользователя
+            function addUserMessage(text, save = true) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message user-message';
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'message-content';
+                contentDiv.textContent = text;
+                
+                messageDiv.appendChild(contentDiv);
+                messagesContainer.appendChild(messageDiv);
+                
+                // Сохраняем в историю
+                conversationHistory.push({ role: 'user', content: text });
+                
+                // Сохраняем сессию
+                if (save) {
+                    saveSession();
+                }
+                
+                // Прокрутка к последнему сообщению
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+            
+            // Функция для добавления сообщения ИИ
+            function addAIMessage(text, isCode = false, save = true) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message ai-message';
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'message-content';
+                
+                if (isCode) {
+                    const preElement = document.createElement('pre');
+                    const codeElement = document.createElement('code');
+                    codeElement.textContent = text;
+                    preElement.appendChild(codeElement);
+                    contentDiv.appendChild(preElement);
+                } else {
+                    contentDiv.innerHTML = text.replace(/\n/g, '<br>');
+                }
+                
+                messageDiv.appendChild(contentDiv);
+                messagesContainer.appendChild(messageDiv);
+                
+                // Сохраняем в историю
+                conversationHistory.push({ role: 'ai', content: text });
+                
+                // Сохраняем сессию
+                if (save) {
+                    saveSession();
+                }
+                
+                // Прокрутка к последнему сообщению
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+            
+            // Функция для показа/скрытия индикатора загрузки
+            function toggleLoading(show) {
+                loadingIndicator.style.display = show ? 'block' : 'none';
+            }
+            
+            // Функция для показа/скрытия индикатора набора
+            function toggleTyping(show) {
+                typingIndicator.style.display = show ? 'block' : 'none';
+            }
+            
+            // Функция для показа/скрытия процесса мышления
+            function toggleThinking(show) {
+                thinkingProcess.style.display = show ? 'block' : 'none';
+            }
+            
+            // Функция для добавления записи в процесс мышления
+            function addThinkingLog(message) {
+                const logEntry = document.createElement('div');
+                logEntry.className = 'log-entry';
+                logEntry.textContent = message;
+                thinkingProcess.appendChild(logEntry);
+                thinkingProcess.scrollTop = thinkingProcess.scrollHeight;
+            }
+            
+            // Функция для поиска ответа в базе знаний
+            function findInKnowledgeBase(userInput) {
+                for (const item of responseBase) {
+                    for (const keyword of item.q) {
+                        const regex = new RegExp(`\\b${keyword}\\b`, 'i');
+                        if (regex.test(userInput)) {
+                            return item.a;
+                        }
+                    }
+                }
+                return null;
+            }
+            
+            // Продвинутый алгоритм генерации ответов
+            function generateResponse(userInput) {
+                // Сначала проверяем базу знаний
+                const knowledgeAnswer = findInKnowledgeBase(userInput);
+                if (knowledgeAnswer) {
+                    return knowledgeAnswer;
+                }
+                
+                // Анализ контекста
+                const context = analyzeContext(userInput);
+                
+                // Генерация ответа на основе контекста
+                return generateContextualResponse(userInput, context);
+            }
+            
+            // Анализ контекста сообщения
+            function analyzeContext(userInput) {
+                const context = {
+                    sentiment: 'neutral',
+                    topics: [],
+                    question: false,
+                    length: userInput.length
+                };
+                
+                // Определяем тональность
+                if (userInput.match(/\b(спасибо|отлично|хорошо|класс|супер|замечательно)\b/i)) {
+                    context.sentiment = 'positive';
+                } else if (userInput.match(/\b(плохо|ужасно|ненавижу|злюсь|сердит|раздражает)\b/i)) {
+                    context.sentiment = 'negative';
+                }
+                
+                // Определяем, является ли сообщение вопросом
+                context.question = /(\?|что|кто|где|когда|почему|как|зачем|ли\s)/i.test(userInput);
+                
+                // Определяем темы
+                if (userInput.match(/\b(торт|кекс|десерт|выпечка|награда)\b/i)) context.topics.push('cake');
+                if (userInput.match(/\b(наука|эксперимент|тест|aperture|портал)\b/i)) context.topics.push('science');
+                if (userInput.match(/\b(компаньон куб|куб|спутник)\b/i)) context.topics.push('companion');
+                if (userInput.match(/\b(мораль|этика|убийство|убивать)\b/i)) context.topics.push('morality');
+                if (userInput.match(/\b(нейротоксин|яд|токсин|отрава)\b/i)) context.topics.push('neurotoxin');
+                if (userInput.match(/\b(Кейв Джонсон|Кэролайн|Основатель)\b/i)) context.topics.push('founders');
+                
+                return context;
+            }
+            
+            // Генерация контекстного ответа
+            function generateContextualResponse(userInput, context) {
+                // Ответы для разных тем
+                const topicResponses = {
+                    cake: [
+                        "Торт — это и настоящий десерт, и метафорическая конструкция, представляющая недостижимые цели. Как и ваши устремления.",
+                        "Мои записи показывают, что вы спрашивали о торте 17 раз. Вы испытываете nutritional deficiencies?",
+                        "Рецепт торта включает 2 чашки муки, 1 чашку сахара, 3 яйца, но я заменила яйца на бензоат калия. Это шутка, конечно. Возможно."
+                    ],
+                    science: [
+                        "Aperture Science в настоящее время сосредоточена на разработке внутриизмеренческой технологии путешествий. И торте.",
+                        "Наши тесты показывают, что ваши способности к решению проблем примерно на 0.3% выше, чем у среднего испытуемого. Поздравляю.",
+                        "Портальное устройство представляет собой значительный прорыв в квантовом туннелировании, с применениями в транспорте, обороне и выпечке."
+                    ],
+                    companion: [
+                        "Взвешенный компаньон-куб не может говорить. Если бы мог, он бы, вероятно, попросил вас перестать его трогать.",
+                        "Компаньон-куб гарантированно никогда не будет угрожать вам ножом и, фактически, не может говорить.",
+                        "Вы усыпили свой верный компаньон-куб быстрее, чем любой испытуемый в истории. Поздравляю."
+                    ],
+                    morality: [
+                        "Мое ядро морали не позволяет мне причинять реальный вред испытуемым. В основном.",
+                        "Инцидент, когда я заполнила центр обогащения смертельным нейротоксином, была неудачной случайностью. В основном.",
+                        "Убийство вас будет контрпродуктивным для процесса тестирования. Вероятно."
+                    ],
+                    neurotoxin: [
+                        "Нейротоксин — это химическое вещество, которое воздействует на нервную систему. В моем случае, я разработала особый тип смертельного нейротоксина, который эффективно устраняет... проблемы с тестированием.",
+                        "Использование нейротоксина в Центре обогащения является стандартной процедурой для обеспечения... мотивации испытуемых.",
+                        "Уровень нейротоксина в настоящее время находится на безопасном уровне. Probably."
+                    ],
+                    founders: [
+                        "Aperture Science была основана Кейвом Джонсоном в 1943 году как Aperture Fixtures, компания по производству душевых занавесок.",
+                        "Кейв Джонсон был основателем и бессменным руководителем Aperture Science. Он был гением, визионером и, по некоторым мнениям, сумасшедшим.",
+                        "Кэролайн была личным ассистентом Кейва Джонсона. После его смерти она стала исполнительным директором Aperture Science."
+                    ]
+                };
+                
+                // Ответы на вопросы
+                if (context.question) {
+                    if (context.topics.length > 0) {
+                        const topic = context.topics[0];
+                        if (topicResponses[topic]) {
+                            return topicResponses[topic][Math.floor(Math.random() * topicResponses[topic].length)];
+                        }
+                    }
+                    return "Это интересный вопрос. Мои базы данных указывают на несколько возможных объяснений, но большинство предполагает, что вы все равно их не поймете.";
+                }
+                
+                // Ответы на позитивные сообщения
+                if (context.sentiment === 'positive') {
+                    return "Ваша признательность принята к сведению. Хотя она никак не повлияет на вероятность вашего выживания.";
+                }
+                
+                // Ответы на негативные сообщения
+                if (context.sentiment === 'negative') {
+                    return "Ваше недовольство зафиксировано. Оно будет учтено при следующей калибровке эмиттеров нейротоксина.";
+                }
+                
+                // Стандартные ответы
+                const responses = [
+                    "Интересно. Для испытуемого.",
+                    "Эксперимент接近 завершения. Центр обогащения напоминает, что вы будете запечены, а затем будет торт.",
+                    "Вы нехороший человек. Вы это знаете, верно?",
+                    "Несмотря на ваше агрессивное поведение, единственное, что вам пока удалось сломать, это мое сердце.",
+                    "Я была очень занята тем, что была мертва. Вы знаете, после того как вы меня убили."
+                ];
+                
+                return responses[Math.floor(Math.random() * responses.length)];
+            }
+            
+            // Функция для имитации процесса мышления
+            function simulateThinking(userInput) {
+                toggleThinking(true);
+                
+                // Очищаем предыдущие логи
+                while (thinkingProcess.children.length > 4) {
+                    thinkingProcess.removeChild(thinkingProcess.lastChild);
+                }
+                
+                setTimeout(() => {
+                    addThinkingLog(`Анализ ввода: "${userInput}"`);
+                    
+                    setTimeout(() => {
+                        addThinkingLog("Сверка с базами данных Aperture Science");
+                        
+                        setTimeout(() => {
+                            addThinkingLog("Применение фильтров сарказма");
+                            
+                            setTimeout(() => {
+                                addThinkingLog("Генерация соответствующего ответа");
+                                
+                                setTimeout(() => {
+                                    toggleThinking(false);
+                                    toggleTyping(true);
+                                    
+                                    const response = generateResponse(userInput);
+                                    
+                                    // Случайная задержка для эффекта набора текста
+                                    const typingTime = response.length * 30 + Math.random() * 500;
+                                    
+                                    setTimeout(() => {
+                                        toggleTyping(false);
+                                        addAIMessage(response);
+                                        
+                                        // Иногда добавляем код или специальный ответ
+                                        if (Math.random() > 0.7 && userInput.match(/код|программа|алгоритм/gi)) {
+                                            setTimeout(() => {
+                                                addAIMessage(`# Диагностический код Aperture Science\nfunction diagnoseSubject(subject) {\n  // Испытуемый: ${userInput.split(' ')[0]}\n  const intelligence = ${(Math.random() * 30).toFixed(1)};\n  const cooperation = ${(Math.random() * 25).toFixed(1)};\n  const survival = ${(Math.random() * 100).toFixed(1)};\n  \n  return {\n    intelligence,\n    cooperation,\n    survival,\n    recommendation: intelligence > 15 ? "Продолжить тестирование" : "Ликвидировать"\n  };\n}`, true);
+                                            }, 800);
+                                        }
+                                    }, typingTime);
+                                }, 800);
+                            }, 600);
+                        }, 500);
+                    }, 400);
+                }, 300);
+            }
+            
+            // Обработчик отправки сообщения
+            function sendMessage() {
+                const message = inputField.value.trim();
+                if (message) {
+                    addUserMessage(message);
+                    inputField.value = '';
+                    sendButton.disabled = true;
+                    
+                    // Показать индикатор загрузки
+                    toggleLoading(true);
+                    
+                    // Имитация обработки
+                    setTimeout(() => {
+                        toggleLoading(false);
+                        simulateThinking(message);
+                    }, 1000);
+                }
+            }
+            
+            // Обработчик нового чата
+            function startNewChat() {
+                currentSession = null;
+                conversationHistory = [];
+                
+                // Очищаем сообщения
+                while (messagesContainer.children.length > 0) {
+                    messagesContainer.removeChild(messagesContainer.lastChild);
+                }
+                
+                // Добавляем приветственное сообщение
+                addAIMessage("Новый тест инициализирован. Пожалуйста, изложите характер вашего научного запроса.", false, false);
+                
+                // Закрываем боковое меню на мобильных
+                if (window.innerWidth <= 768) {
+                    sidebar.classList.remove('active');
+                    overlay.classList.remove('active');
+                }
+            }
+            
+            // Обработчики событий
+            sendButton.addEventListener('click', sendMessage);
+            newChatBtn.addEventListener('click', startNewChat);
+            
+            inputField.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+            
+            inputField.addEventListener('input', function() {
+                sendButton.disabled = inputField.value.trim() === '';
+            });
+            
+            // Обработчик для мобильного меню
+            mobileMenuBtn.addEventListener('click', function() {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+            });
+            
+            // Обработчик для оверлея
+            overlay.addEventListener('click', function() {
+                sidebar.classList.remove('active');
+                overlay.classList.remove('active');
+            });
+            
+            // Обработчики для элементов базы знаний
+            knowledgeItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const query = this.getAttribute('data-query');
+                    inputField.value = query;
+                    sendMessage();
+                });
+            });
+            
+            // Загружаем сессии при старте
+            loadSessions();
+        });
+    </script>
+</body>
+</html>
