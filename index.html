@@ -63,6 +63,8 @@
             position: relative;
             overflow: hidden;
             flex-shrink: 0;
+            background-color: var(--accent);
+            border-radius: 50%;
         }
         
         .logo img {
@@ -639,13 +641,26 @@
             color: var(--text-secondary);
             font-style: italic;
         }
+        
+        .debug-info {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.7rem;
+            color: #0f0;
+            display: none;
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
     <div class="header">
         <div class="logo-container">
             <div class="logo">
-                <img src="image/logo.png" alt="Aperture Science">
+                <img src="image/logo.png" alt="Aperture Science" onerror="this.style.display='none'; this.parentNode.style.backgroundColor='var(--accent)'; this.parentNode.innerHTML='AS';">
             </div>
             <div>
                 <div class="title">GLaDOS <span class="subtitle">v3.1.0</span></div>
@@ -725,6 +740,8 @@
         </div>
     </div>
 
+    <div class="debug-info" id="debugInfo"></div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const messagesContainer = document.getElementById('messages');
@@ -739,17 +756,31 @@
             const overlay = document.getElementById('overlay');
             const knowledgeItems = document.querySelectorAll('.knowledge-item');
             const chatHistory = document.getElementById('chatHistory');
+            const debugInfo = document.getElementById('debugInfo');
             
             let conversationHistory = [];
             let currentSession = null;
             let sessions = JSON.parse(localStorage.getItem('glados_sessions')) || [];
             let responseBase = [];
             
+            // Для отладки - показать/скрыть информацию о совпадениях
+            const DEBUG_MODE = false;
+            if (DEBUG_MODE) {
+                debugInfo.style.display = 'block';
+            }
+            
             // Загрузка базы ответов
             fetch('base.json')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) throw new Error('Файл не найден');
+                    return response.json();
+                })
                 .then(data => {
                     responseBase = data;
+                    if (DEBUG_MODE) {
+                        debugInfo.textContent = `Загружено ${data.length} ответов из base.json`;
+                        setTimeout(() => { debugInfo.textContent = ''; }, 3000);
+                    }
                 })
                 .catch(error => {
                     console.error('Ошибка загрузки базы ответов:', error);
@@ -768,6 +799,11 @@
                             "a": "Я могу помочь с научными запросами, тестовыми протоколами, рецептами торта и экзистенциальными дилеммами. Я также могу заполнить центр обогащения смертельным нейротоксином, но probably не буду. Вероятно."
                         }
                     ];
+                    
+                    if (DEBUG_MODE) {
+                        debugInfo.textContent = 'Используется резервная база ответов';
+                        setTimeout(() => { debugInfo.textContent = ''; }, 3000);
+                    }
                 });
             
             // Загрузка сессий
@@ -957,16 +993,87 @@
                 thinkingProcess.scrollTop = thinkingProcess.scrollHeight;
             }
             
-            // Функция для поиска ответа в базе знаний
+            // Улучшенная функция для поиска ответа в базе знаний
             function findInKnowledgeBase(userInput) {
+                if (!responseBase || responseBase.length === 0) return null;
+                
+                const input = userInput.toLowerCase();
+                let bestMatch = null;
+                let highestScore = 0;
+                
+                // Проверяем каждый элемент базы
                 for (const item of responseBase) {
+                    if (!item.q || !item.a) continue;
+                    
+                    let score = 0;
+                    let matchedKeywords = [];
+                    
+                    // Проверяем каждое ключевое слово
                     for (const keyword of item.q) {
-                        const regex = new RegExp(`\\b${keyword}\\b`, 'i');
-                        if (regex.test(userInput)) {
-                            return item.a;
+                        const normalizedKeyword = keyword.toLowerCase().trim();
+                        
+                        // Разные стратегии сравнения
+                        if (input === normalizedKeyword) {
+                            // Точное совпадение - максимальный балл
+                            score = 100;
+                            matchedKeywords = [keyword];
+                            break;
+                        } else if (input.includes(normalizedKeyword)) {
+                            // Частичное совпадение
+                            score += 10;
+                            matchedKeywords.push(keyword);
+                        } else {
+                            // Попробуем разделить на слова
+                            const keywordWords = normalizedKeyword.split(/\s+/);
+                            let wordMatches = 0;
+                            
+                            for (const word of keywordWords) {
+                                if (word.length > 2 && input.includes(word)) {
+                                    wordMatches++;
+                                }
+                            }
+                            
+                            if (wordMatches > 0) {
+                                score += wordMatches * 3;
+                                matchedKeywords.push(keyword);
+                            }
                         }
                     }
+                    
+                    // Учитываем длину запроса и количество совпадений
+                    if (score > 0) {
+                        score += matchedKeywords.length * 2;
+                        
+                        // Если это вопрос, увеличиваем оценку
+                        if (input.includes('?')) {
+                            score += 5;
+                        }
+                        
+                        if (DEBUG_MODE) {
+                            debugInfo.textContent = `Запрос: "${userInput}", Ключи: [${item.q.join(', ')}], Совпадения: [${matchedKeywords.join(', ')}], Оценка: ${score}`;
+                        }
+                    }
+                    
+                    // Выбираем лучший匹配
+                    if (score > highestScore) {
+                        highestScore = score;
+                        bestMatch = item.a;
+                    }
                 }
+                
+                // Если есть хорошее совпадение, возвращаем ответ
+                if (highestScore >= 5) {
+                    if (DEBUG_MODE) {
+                        setTimeout(() => { debugInfo.textContent = ''; }, 3000);
+                    }
+                    return bestMatch;
+                }
+                
+                if (DEBUG_MODE) {
+                    debugInfo.textContent = `Не найдено подходящих ответов для: "${userInput}"`;
+                    setTimeout(() => { debugInfo.textContent = ''; }, 3000);
+                }
+                
                 return null;
             }
             
